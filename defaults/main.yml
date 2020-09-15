@@ -1,0 +1,8 @@
+---
+# defaults file for image-transfer
+
+
+image_transfer_list: []
+
+image_transfer_local_path: "/var/tmp/image-transfer-local"
+image_transfer_remote_path: "/var/tmp/image-transfer-remote"
