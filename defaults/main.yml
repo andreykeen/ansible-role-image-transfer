@@ -1,8 +1,13 @@
 ---
-# defaults file for image-transfer
 
-
+# Список docker images для передачи на удалённый хост
 image_transfer_list: []
 
+# Директория на локальном хосте для выгрузки docker images в файлы
 image_transfer_local_path: "/var/tmp/image-transfer-local"
+
+# Директория на удалённом хосте, в которую копируются файлы docker images
 image_transfer_remote_path: "/var/tmp/image-transfer-remote"
+
+# Если docker images на удалённом хосте есть, он принудительно удаляется и загружается заново
+image_transfer_force: false

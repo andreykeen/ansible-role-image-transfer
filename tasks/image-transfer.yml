@@ -1,0 +1,82 @@
+---
+
+- set_fact:
+    current_image_local_file: "{{ image_transfer_local_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
+    current_image_remote_file: "{{ image_transfer_remote_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
+
+
+### Выполняется на локальном хосте
+- block:
+  - name: Убедиться, что директории "{{ image_transfer_local_path }}" существует на локальном хосте.
+    file:
+      path: "{{ image_transfer_local_path }}"
+      state: directory
+      recurse: yes
+
+  - name: Проверка, есть ли архив '{{ current_image_local_file }}.tgz' на локальном хосте.
+    stat:
+      path: "{{ current_image_local_file }}.tgz"
+    register: archive_exist
+
+  # Выполняется, если требуемого архива на локальном хосте нет
+  - block:
+      - name: Загрузка '{{ current_image }}' из репозитория на локальный хост".
+        shell: |
+          docker pull "{{ current_image }}"
+
+      - name: Сохранение '{{ current_image }}' в файл '{{ current_image_local_file }}' на локальном хосте.
+        shell: |
+          docker image save --output="{{ current_image_local_file }}" "{{ current_image }}"
+
+      - name: Сжатие '{{ current_image_local_file }}' в архив на локальном хосте.
+        archive:
+          path: "{{ current_image_local_file }}"
+          dest: "{{ current_image_local_file }}.tgz"
+          force_archive: yes
+          remove: yes
+
+    when: not archive_exist.stat.exists
+
+  delegate_to: 127.0.0.1
+  become: no
+  run_once: true
+###
+
+
+### Выполняется на удалённом хосте
+- name: Удаление ранее созданной директории "{{ image_transfer_remote_path }}" на удалённом хосте.
+  file:
+    path: "{{ image_transfer_remote_path }}"
+    state: absent
+
+- name: Создание директории "{{ image_transfer_remote_path }}" на удалённом хосте.
+  file:
+    path: "{{ image_transfer_remote_path }}"
+    state: directory
+    recurse: yes
+
+- name: Копирование '{{ current_image_local_file }}.tgz' на удалённый хост.
+  copy:
+    src: "{{ current_image_local_file }}.tgz"
+    dest: "{{ current_image_remote_file }}.tgz"
+
+- name: Распаковка архива '{{ current_image_remote_file }}.tgz' на удалённом хосте.
+  unarchive:
+    src: "{{ current_image_remote_file }}.tgz"
+    dest: "{{ image_transfer_remote_path }}"
+    remote_src: yes
+
+- name: Удаление существующего docker images '{{ current_image }}'
+  shell: |
+    docker image rm "{{ current_image }}"
+  when: image_transfer_force|bool == true
+
+- name: Загрузка docker image из файлa {{ current_image_remote_file }}' на удалённом хосте.
+  shell: |
+    docker image load --input="{{ current_image_remote_file }}"
+
+- name: Удаление директории "{{ image_transfer_remote_path }}" на удалённом хосте.
+  file:
+    path: "{{ image_transfer_remote_path }}"
+    state: absent
+###

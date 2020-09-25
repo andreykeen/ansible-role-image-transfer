@@ -1,111 +1,19 @@
 ---
 
+# - name: Проверка входит ли локальный пользователь в группу docker.
+#   shell: |
+#     groups | grep -w "docker"
+#   register: docker_group
+#   changed_when: false
+#   failed_when: docker_group.stdout == ''
 
-# TODO: Сделать проверку и пересылать только отсутствующие на удалённом хосте имиджи.
-
-- name: Вывод 'image_transfer_list'
+- name: Список docker images
   debug:
     var: image_transfer_list
   run_once: true
 
-- name: Блок передачи docker images
-  include_tasks: transfer.yml
+- include_tasks: check-if-exist.yml
   loop: "{{ image_transfer_list }}"
   loop_control:
     loop_var: current_image
-
-
-
-
-
-# - name: Получение, выгрузка и упаковка docker images на локальном хосте.
-#   block:
-
-#     - name: Проверка входит ли локальный пользователь в группу docker.
-#       shell: |
-#         groups | grep -w "docker"
-#       register: docker_group
-#       changed_when: false
-#       failed_when: docker_group.stdout == ''
-
-#     - name: Удаление ранее созданной директории "{{ image_transfer_local_path }}" на локальном хосте.
-#       file:
-#         path: "{{ image_transfer_local_path }}"
-#         state: absent
-
-#     - name: Создание директории "{{ image_transfer_local_path }}/images" на локальном хосте для сохранения docker images в виде файлов.
-#       file:
-#         path: "{{ image_transfer_local_path }}/images"
-#         state: directory
-#         recurse: yes
-
-#     - name: Загрузка имиджей из репозитория на локальный хост".
-#       shell: |
-#         docker pull "{{ item }}"
-#       loop: "{{ image_transfer_list }}"
-
-#     - name: Сохранение имиджей в виде файлов в директорию "{{ image_transfer_local_path }}/images" на локальном хосте.
-#       shell: |
-#         docker image save --output="{{ image_transfer_local_path }}/images/{{ item | replace("/", "_") | replace(":", "_") }}" "{{ item }}"
-#       loop: "{{ image_transfer_list }}"
-
-#     - name: Сжатие директории "{{ image_transfer_local_path }}/images" в архив на локальном хосте.
-#       archive:
-#         path: "{{ image_transfer_local_path }}/images"
-#         dest: "{{ image_transfer_local_path }}/images/images.tgz"
-
-#   delegate_to: 127.0.0.1
-#   run_once: true
-#   become: no
-
-
-
-# ## Выполняется на удалённом хосте
-# - name: Удаление ранее созданной директории "{{ image_transfer_remote_path }}" на удалённом хосте.
-#   file:
-#     path: "{{ image_transfer_remote_path }}"
-#     state: absent
-
-# - name: Создание директории "{{ image_transfer_remote_path }}" на удалённом хосте.
-#   file:
-#     path: "{{ image_transfer_remote_path }}"
-#     state: directory
-#     recurse: yes
-
-# - name: Копирование архива с имиджами на удалённый хост.
-#   copy:
-#     src: "{{ image_transfer_local_path }}/images/images.tgz"
-#     dest: "{{ image_transfer_remote_path }}/images.tgz"
-
-# - name: Распаковка архива "{{ image_transfer_remote_path }}/images.tgz" на удалённом хосте.
-#   unarchive:
-#     src: "{{ image_transfer_remote_path }}/images.tgz"
-#     dest: "{{ image_transfer_remote_path }}"
-#     remote_src: yes
-
-# - name: Получение списка файлов в директории "{{ image_transfer_remote_path }}/images" на удалённом хосте.
-#   find:
-#     path: "{{ image_transfer_remote_path }}/images"
-#     file_type: file
-#   register: find_list_remote_dirs
-
-# - name: Загрузка из файлов имиджей в docker на удалённом хосте.
-#   shell: |
-#     docker image load --input="{{ item.path }}"
-#   loop: "{{ find_list_remote_dirs.files }}"
-
-# - name: Удаление директории "{{ image_transfer_remote_path }}" на удалённом хосте.
-#   file:
-#     path: "{{ image_transfer_remote_path }}"
-#     state: absent
-
-
-
-# - name: Удаление директории "{{ image_transfer_local_path }}" на локальном хосте.
-#   file:
-#     path: "{{ image_transfer_local_path }}"
-#     state: absent
-#   delegate_to: 127.0.0.1
-#   run_once: true
-#   become: no
 
