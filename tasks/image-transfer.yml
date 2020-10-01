@@ -1,9 +1,5 @@
 ---
 
-- set_fact:
-    current_image_local_file: "{{ image_transfer_local_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
-    current_image_remote_file: "{{ image_transfer_remote_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
-
 
 ### Выполняется на локальном хосте
 - block:

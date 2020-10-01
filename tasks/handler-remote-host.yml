@@ -1,0 +1,30 @@
+---
+
+- set_fact:
+    # current_image_local_file: "{{ image_transfer_local_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
+    # current_image_remote_file: "{{ image_transfer_remote_path }}/{{ current_image | replace('/', '_') | replace(':', '_') }}"
+    current_image_replace_name: "{{ current_image | replace('/', '_') | replace(':', '_') }}"
+  run_once: true
+
+
+- name: Проверка, есть ли docker image '{{ current_image }}' на удалённом хосте
+  shell: |
+    docker images --format '{{ format_tempate }}' --filter 'reference={{ current_image }}'
+  vars:
+    format_tempate: !unsafe '{{.Repository}}:{{.Tag}}'
+  register: remote_image_exists
+  changed_when: remote_image_exists.stdout|length == 0
+
+
+### Выполняется на хосте с кэшем, если он задан в переменной и если на целевом хосте нет docker image
+- include_tasks: handler-cache-host.yml
+  when: image_transfer_cache_host|length > 0 and remote_image_exists.stdout|length == 0
+
+
+
+
+
+
+# # Выполняется, если Docker images отсутствует
+# - include_tasks: image-transfer.yml
+#   when: image_transfer_force|bool == true or remote_image_exists.stdout|length == 0
