@@ -12,9 +12,29 @@
     stat:
       path: "{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz"
     register: archive_on_cache_host_exists
+    changed_when: not archive_on_cache_host_exists.stat.exists
+
+  delegate_to: "{{ image_transfer_cache_host }}"
+  become: no
+  run_once: true
 
 
 ### Выполняется, если требуемого архива нет на хосте с кэшем
 - include_tasks: handler-local-host.yml
   when: not archive_on_cache_host_exists.stat.exists
 
+
+- name: Копирование архива "{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz" c локального хоста на кэширующий.
+  copy:
+    src: "{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz"
+    dest: "{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz"
+  delegate_to: "{{ image_transfer_cache_host }}"
+  become: no
+  run_once: true
+
+- name: Копирование '{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz' с кэширующего хоста на удалённый.
+  synchronize:
+    src: "{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz"
+    dest: "{{ image_transfer_remote_path }}/{{ current_image_replace_name }}.tgz"
+  delegate_to: "{{ image_transfer_cache_host }}"
+  become: no

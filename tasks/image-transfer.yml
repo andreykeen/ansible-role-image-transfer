@@ -51,6 +51,7 @@
     state: directory
     recurse: yes
 
+
 - name: Копирование '{{ current_image_local_file }}.tgz' на удалённый хост.
   copy:
     src: "{{ current_image_local_file }}.tgz"

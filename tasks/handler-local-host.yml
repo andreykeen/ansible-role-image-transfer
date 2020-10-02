@@ -12,6 +12,7 @@
     stat:
       path: "{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz"
     register: local_archive_exist
+    changed_when: not local_archive_exist.stat.exists
 
   # Выполняется, если требуемого архива на локальном хосте нет
   - block:

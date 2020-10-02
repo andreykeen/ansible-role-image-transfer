@@ -12,7 +12,9 @@ image_transfer_remote_path: "/var/tmp/image-transfer-remote"
 # Если docker images на удалённом хосте есть, он принудительно удаляется и загружается заново
 image_transfer_force: false
 
-# На указанный хост загружается docker image и сохраняется на нём.
-# После этого docker image передаётся с хоста, указанного в этой переменной, на целевой хост.
+# Кэширующий хост. На него загружается docker images.
+# После этого docker images передаются с этого хоста на целевые хосты.
 image_transfer_cache_host: ""
+
+# Директория на кэширующим хосте, в которую копируются файлы docker images
 image_transfer_cache_path: "/var/tmp/image-transfer-cache"
