@@ -14,9 +14,6 @@
   changed_when: remote_image_exists.stdout|length == 0
 
 
-
-
-
 ### Выполняется, если на удалённом хосте нет docker image
 - block:
 
@@ -32,20 +29,20 @@
       recurse: yes
     become: no
 
+  ### Загружает, если docker images нет на локальном хосте
+  - include_tasks: handler-local-host.yml
 
   ### Выполняется, если задан кэширующий хост
-  - name: Подключение файла, если задан кэширующий хост.
+  - name: Подключение файла 'handler-cache-host.yml', если задан кэширующий хост.
     include_tasks: handler-cache-host.yml
     when: image_transfer_cache_host|length > 0
 
-
-  ### Выполняется, если кэширующего хоста нет
+  ### Выполняется, если не задан кэширующий хост
   - name: Копирование '{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz' на удалённый хост.
     copy:
       src: "{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz"
       dest: "{{ image_transfer_remote_path }}/{{ current_image_replace_name }}.tgz"
     when: image_transfer_cache_host|length == 0
-
 
   - name: Распаковка архива '{{ image_transfer_remote_path }}/{{ current_image_replace_name }}.tgz' на удалённом хосте.
     unarchive:

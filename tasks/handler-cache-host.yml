@@ -1,28 +1,13 @@
 ---
 
-### Выполняется на хосте с кэшем, если он задан в переменной
-- block:
-  - name: Убедиться, что директория "{{ image_transfer_cache_path }}" существует на хосте с кэшем.
-    file:
-      path: "{{ image_transfer_cache_path }}"
-      state: directory
-      recurse: yes
-
-  - name: Проверка, есть ли архив '{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz' на хосте с кэшем.
-    stat:
-      path: "{{ image_transfer_cache_path }}/{{ current_image_replace_name }}.tgz"
-    register: archive_on_cache_host_exists
-    changed_when: not archive_on_cache_host_exists.stat.exists
-
+- name: Убедиться, что директория "{{ image_transfer_cache_path }}" существует на хосте с кэшем.
+  file:
+    path: "{{ image_transfer_cache_path }}"
+    state: directory
+    recurse: yes
   delegate_to: "{{ image_transfer_cache_host }}"
   become: no
   run_once: true
-
-
-### Выполняется, если требуемого архива нет на хосте с кэшем
-- include_tasks: handler-local-host.yml
-  when: not archive_on_cache_host_exists.stat.exists
-
 
 - name: Копирование архива "{{ image_transfer_local_path }}/{{ current_image_replace_name }}.tgz" c локального хоста на кэширующий.
   copy:
