@@ -1,31 +1,66 @@
-Role Name
+Ansible role: image-transfer
 =========
 
-A brief description of the role goes here.
+Выполняет загрузку docker images на удалённые носты
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Требуется Docker на целевых хостах и хосте запуска
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Список docker images для передачи на удалённый хост:
+
+    image_transfer_list: []
+
+Директория на локальном хосте для выгрузки docker images в файлы:
+
+    image_transfer_local_path: "/var/tmp/image-transfer-local"
+
+Директория на удалённом хосте, в которую копируются файлы docker images:
+
+    image_transfer_remote_path: "/var/tmp/image-transfer-remote"
+
+Если docker images на удалённом хосте есть, он принудительно удаляется и загружается заново:
+
+    image_transfer_force: false
+
+Кэширующий хост для промежуточной загрузки docker images. После docker images передаются с кэширующего хоста на целевые хосты.
+
+    image_transfer_cache_host: ""
+
+Директория на кэширующим хосте, в которую копируются файлы docker images
+
+    image_transfer_cache_path: "/var/tmp/image-transfer-cache"
+
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+- hosts:
+    - host01
+    - host02
+    - host03
+  gather_facts: false
+  strategy: linear
+  become: yes
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+  roles:
+    - role: image-transfer
+      image_transfer_list:
+        - postgres:12.4
+        - rabbitmq:3.8.19-management
+        - nginx:1.19.10
+      image_transfer_cache_host: host01
+```
 
 License
 -------
@@ -35,4 +70,4 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+This role was created in 2020 by Andrey Vladimirskiy
