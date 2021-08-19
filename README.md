@@ -1,7 +1,7 @@
 Ansible role: image-transfer
 =========
 
-Выполняет загрузку docker images на удалённые носты
+Выполняет загрузку docker images на удалённые хосты
 
 Requirements
 ------------
